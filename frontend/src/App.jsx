@@ -4,7 +4,7 @@ import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { UserPlus, Users, Calendar as CalendarIcon, Phone, Clock, FileText, Upload, File, Trash2, DollarSign, Package, AlertCircle } from 'lucide-react';
+import { UserPlus, Users, Calendar as CalendarIcon, Clock, FileText, AlertCircle } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
 const API_URL = 'https://quirosoft-backend.onrender.com/api';
@@ -174,16 +174,10 @@ function App() {
           <UserPlus size={16} /> Pacientes
         </button>
         <button onClick={() => setAbaAtiva('agendamentos')} style={{ padding: '10px', cursor: 'pointer', fontWeight: abaAtiva === 'agendamentos' ? 'bold' : 'normal' }}>
-          <CalendarIcon size={16} /> Novo Agendamento
-        </button>
-        <button onClick={() => setAbaAtiva('calendario')} style={{ padding: '10px', cursor: 'pointer', fontWeight: abaAtiva === 'calendario' ? 'bold' : 'normal' }}>
-          <Clock size={16} /> Calendário
-        </button>
-        <button onClick={() => setAbaAtiva('status')} style={{ padding: '10px', cursor: 'pointer', fontWeight: abaAtiva === 'status' ? 'bold' : 'normal' }}>
-          <AlertCircle size={16} /> Status Consultas
+          <CalendarIcon size={16} /> Agendamentos
         </button>
         <button onClick={() => setAbaAtiva('historico')} style={{ padding: '10px', cursor: 'pointer', fontWeight: abaAtiva === 'historico' ? 'bold' : 'normal' }}>
-          <FileText size={16} /> Prontuário / Histórico
+          <FileText size={16} /> Prontuário & Exames
         </button>
       </nav>
 
@@ -209,76 +203,75 @@ function App() {
 
       {abaAtiva === 'agendamentos' && (
         <div>
-          <h2><CalendarIcon size={20} /> Novo Agendamento</h2>
+          <h2><CalendarIcon size={20} /> Agendar Consulta</h2>
           <form onSubmit={handleSalvarAgendamento} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
             <select value={formAgendamento.paciente_id} onChange={(e) => setFormAgendamento({ ...formAgendamento, paciente_id: e.target.value })} required>
-              <option value="">Selecione o Paciente</option>
+              <option value="">Selecione um Paciente...</option>
               {pacientes.map((p) => (
                 <option key={p.id} value={p.id}>{p.nome}</option>
               ))}
             </select>
             <input type="datetime-local" value={formAgendamento.data_hora} onChange={(e) => setFormAgendamento({ ...formAgendamento, data_hora: e.target.value })} required />
             <select value={formAgendamento.tipo_consulta} onChange={(e) => setFormAgendamento({ ...formAgendamento, tipo_consulta: e.target.value })}>
-              <option value="Ajuste">Ajuste</option>
+              <option value="Consulta Avulsa">Consulta Avulsa</option>
               <option value="Avaliação">Avaliação</option>
-              <option value="Retorno">Retorno</option>
+              <option value="Plano de Cuidado (Pacote)">Plano de Cuidado (Pacote)</option>
             </select>
-            <button type="submit" style={{ padding: '10px', backgroundColor: '#28a745', color: '#fff', border: 'none', cursor: 'pointer' }}>Agendar</button>
+            <input placeholder="Valor Pago (R$)" value={formAgendamento.valor_pago} onChange={(e) => setFormAgendamento({ ...formAgendamento, valor_pago: e.target.value })} />
+            <input placeholder="Observações" value={formAgendamento.observacoes} onChange={(e) => setFormAgendamento({ ...formAgendamento, observacoes: e.target.value })} />
+            <button type="submit" style={{ padding: '10px', backgroundColor: '#28a745', color: '#fff', border: 'none', cursor: 'pointer' }}>Confirmar Agendamento</button>
           </form>
-        </div>
-      )}
 
-      {abaAtiva === 'calendario' && (
-        <div style={{ height: '500px' }}>
-          <h2><Clock size={20} /> Agenda de Consultas</h2>
-          <BigCalendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" style={{ height: '100%' }} />
-        </div>
-      )}
+          <div style={{ height: '500px', marginTop: '30px' }}>
+            <BigCalendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" style={{ height: '100%' }} />
+          </div>
 
-      {abaAtiva === 'status' && (
-        <div>
-          <h2><Clock size={20} /> Gerenciar Status das Consultas</h2>
+          <div style={{ marginTop: '40px' }}>
+            <h2><Clock size={20} /> Gerenciar Status das Consultas</h2>
 
-          <button 
-            onClick={() => setMostrarPassados(!mostrarPassados)}
-            style={{
-              marginBottom: '15px',
-              padding: '8px 14px',
-              backgroundColor: '#f0f0f0',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            {mostrarPassados ? '🙈 Ocultar consultas anteriores' : '👁️ Ver consultas anteriores'}
-          </button>
+            <button 
+              onClick={() => setMostrarPassados(!mostrarPassados)}
+              style={{
+                marginBottom: '15px',
+                padding: '8px 14px',
+                backgroundColor: '#f0f0f0',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {mostrarPassados ? '🙈 Ocultar consultas anteriores' : '👁️ Ver consultas anteriores'}
+            </button>
 
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {agendamentos
-              .filter((a) => {
-                if (mostrarPassados) return true;
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
-                const dataConsulta = new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date());
-                return dataConsulta >= hoje;
-              })
-              .map((a) => (
-                <li key={a.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong>{a.paciente_nome}</strong> - <small>{a.telefone}</small><br />
-                    <span style={{ fontWeight: 'bold', color: '#007bff' }}>Tipo: {a.tipo_consulta || 'N/A'}</span><br />
-                    <span><Clock size={14} /> {new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date()).toLocaleString('pt-BR')}</span> <br />
-                    <span style={{ fontWeight: 'bold', color: a.status === 'realizado' ? 'green' : a.status === 'cancelado' ? 'red' : 'orange' }}>Status: {a.status}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => atualizarStatus(a.id, 'realizado')} style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>✔ Realizada</button>
-                    <button onClick={() => atualizarStatus(a.id, 'cancelado')} style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>⊗ Cancelar</button>
-                    <button onClick={() => handleDeletarAgendamento(a.id)} style={{ backgroundColor: '#6c757d', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>🗑 Excluir</button>
-                  </div>
-                </li>
-              ))}
-          </ul>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {agendamentos
+                .filter((a) => {
+                  if (mostrarPassados) return true;
+                  const hoje = new Date();
+                  hoje.setHours(0, 0, 0, 0);
+                  const dataConsulta = new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date());
+                  return dataConsulta >= hoje;
+                })
+                .map((a) => (
+                  <li key={a.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong>{a.paciente_nome}</strong> - <small>{a.telefone}</small><br />
+                      <span style={{ fontWeight: 'bold', color: '#007bff' }}>Tipo: {a.tipo_consulta || 'N/A'}</span>
+                      {a.valor_pago > 0 && <span> | Pago: R$ {a.valor_pago}</span>}<br />
+                      <span><Clock size={14} /> {new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date()).toLocaleString('pt-BR')}</span> <br />
+                      <small style={{ color: '#666' }}>Obs: {a.observacoes || 'Nenhuma'}</small> <br />
+                      <span style={{ fontWeight: 'bold', color: a.status === 'realizado' ? 'green' : a.status === 'cancelado' ? 'red' : 'orange' }}>Status: {a.status}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => atualizarStatus(a.id, 'realizado')} style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>✔ Realizada</button>
+                      <button onClick={() => atualizarStatus(a.id, 'cancelado')} style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>⊗ Cancelar</button>
+                      <button onClick={() => handleDeletarAgendamento(a.id)} style={{ backgroundColor: '#6c757d', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>🗑 Excluir</button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
         </div>
       )}
 
