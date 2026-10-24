@@ -494,7 +494,6 @@ function App() {
 
 <h2><Clock size={20} /> Gerenciar Status das Consultas</h2>
 
-          {/* Botão para alternar consultas passadas */}
           <button 
             onClick={() => setMostrarPassados(!mostrarPassados)}
             style={{
@@ -504,10 +503,7 @@ function App() {
               border: '1px solid #ccc',
               borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
+              fontWeight: 'bold'
             }}
           >
             {mostrarPassados ? '🙈 Ocultar consultas anteriores' : '👁️ Ver consultas anteriores'}
@@ -516,14 +512,13 @@ function App() {
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {agendamentos
               .filter((a) => {
-                if (mostrarPassados) return true; // Se ativo, mostra tudo
+                if (mostrarPassados) return true;
 
-                // Obtém o início do dia atual (00:00:00)
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
 
                 const dataConsulta = new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date());
-                return dataConsulta >= hoje; // Exibe apenas de hoje em diante
+                return dataConsulta >= hoje;
               })
               .map((a) => (
                 <li key={a.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -558,8 +553,6 @@ function App() {
                 </li>
               ))}
           </ul>
-        </div>
-      )}
 
       {/* ABA PRONTUÁRIO E EXAMES */}
       {abaAtiva === 'prontuario' && (
