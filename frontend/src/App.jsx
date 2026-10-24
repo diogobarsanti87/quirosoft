@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { UserPlus, Users, Calendar as CalendarIcon, Phone, Clock, FileText, Upload, File, Trash2, DollarSign, Package, AlertCircle } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
-const [mostrarPassados, setMostrarPassados] = useState(false);
+
 
 const locales = {
   'pt-BR': ptBR,
@@ -22,6 +22,7 @@ const localizer = dateFnsLocalizer({
 });
 
 function App() {
+  const [mostrarPassados, setMostrarPassados] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState('pacientes');
   const [pacientes, setPacientes] = useState([]);
   const [agendamentos, setAgendamentos] = useState([]);
