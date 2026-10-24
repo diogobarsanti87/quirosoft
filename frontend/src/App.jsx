@@ -7,6 +7,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { UserPlus, Users, Calendar as CalendarIcon, Phone, Clock, FileText, Upload, File, Trash2, DollarSign, Package, AlertCircle } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
+const [mostrarPassados, setMostrarPassados] = useState(false);
+
 const locales = {
   'pt-BR': ptBR,
 };
@@ -489,40 +491,71 @@ function App() {
             />
           </div>
 
-          <h2><Clock size={20} /> Gerenciar Status das Consultas</h2>
+<h2><Clock size={20} /> Gerenciar Status das Consultas</h2>
+
+          {/* Botão para alternar consultas passadas */}
+          <button 
+            onClick={() => setMostrarPassados(!mostrarPassados)}
+            style={{
+              marginBottom: '15px',
+              padding: '8px 14px',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            {mostrarPassados ? '🙈 Ocultar consultas anteriores' : '👁️ Ver consultas anteriores'}
+          </button>
+
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {agendamentos.map((a) => (
-              <li key={a.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <strong>{a.paciente_nome}</strong> - <small>{a.telefone}</small><br />
-                  <span style={{ fontWeight: 'bold', color: '#007bff' }}>Tipo: {a.tipo_consulta || 'N/A'}</span>
-                  {a.valor_pago > 0 && <span> | Pago: R$ {a.valor_pago}</span>}<br />
-                  <span><Clock size={14} /> {new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date()).toLocaleString('pt-BR')}</span> <br />
-                  <small style={{ color: '#666' }}>Obs: {a.observacoes || 'Nenhuma'}</small> <br />
-                  <span style={{ fontWeight: 'bold', color: a.status === 'realizado' ? 'green' : a.status === 'cancelado' ? 'red' : 'orange' }}>Status: {a.status}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => atualizarStatus(a.id, 'realizado')}
-                    style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    ✔ Realizada
-                  </button>
-                  <button
-                    onClick={() => atualizarStatus(a.id, 'cancelado')}
-                    style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    ⊗ Cancelar
-                  </button>
-                  <button
-                    onClick={() => handleDeletarAgendamento(a.id)}
-                    style={{ backgroundColor: '#6c757d', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    🗑 Excluir
-                  </button>
-                </div>
-              </li>
-            ))}
+            {agendamentos
+              .filter((a) => {
+                if (mostrarPassados) return true; // Se ativo, mostra tudo
+
+                // Obtém o início do dia atual (00:00:00)
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                const dataConsulta = new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date());
+                return dataConsulta >= hoje; // Exibe apenas de hoje em diante
+              })
+              .map((a) => (
+                <li key={a.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong>{a.paciente_nome}</strong> - <small>{a.telefone}</small><br />
+                    <span style={{ fontWeight: 'bold', color: '#007bff' }}>Tipo: {a.tipo_consulta || 'N/A'}</span>
+                    {a.valor_pago > 0 && <span> | Pago: R$ {a.valor_pago}</span>}<br />
+                    <span><Clock size={14} /> {new Date(a.data_hora ? a.data_hora.replace(' ', 'T') : new Date()).toLocaleString('pt-BR')}</span> <br />
+                    <small style={{ color: '#666' }}>Obs: {a.observacoes || 'Nenhuma'}</small> <br />
+                    <span style={{ fontWeight: 'bold', color: a.status === 'realizado' ? 'green' : a.status === 'cancelado' ? 'red' : 'orange' }}>Status: {a.status}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => atualizarStatus(a.id, 'realizado')}
+                      style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      ✔ Realizada
+                    </button>
+                    <button
+                      onClick={() => atualizarStatus(a.id, 'cancelado')}
+                      style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      ⊗ Cancelar
+                    </button>
+                    <button
+                      onClick={() => handleDeletarAgendamento(a.id)}
+                      style={{ backgroundColor: '#6c757d', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      🗑 Excluir
+                    </button>
+                  </div>
+                </li>
+              ))}
           </ul>
         </div>
       )}
